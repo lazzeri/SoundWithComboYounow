@@ -15,11 +15,12 @@ var lastName = "";
 var lastValue = "";
 var comboCounter = 2;
 
-var userName = "moonhawk";
+var userName = "Sanji-oker";
 
 
 async function RunCode()
 {
+    console.log(userName);
     await DownloadGifts();
     FetchBroadcastId();
 
@@ -144,6 +145,7 @@ function FetchEvent()
                 }
                 else
                 {
+                    firstGift(foundValue,foundName);
                     lastName = foundName;
                     lastValue = foundValue;
                     comboCounter = 2;
@@ -186,8 +188,51 @@ async function firstGift(foundValue,foundName)
 
 }
 
+function playComboSound(value) {
+    switch(value)
+    {
+
+        case 2:
+            var audio = new Audio('music/combo2.mp3');
+            audio.play();
+            console.log('2');
+            break;
+
+        case 3:
+            var audio = new Audio('music/combo3.mp3');
+            audio.play();
+            console.log('3');
+
+            break;
+
+        case 4:
+            var audio = new Audio('music/combo4.mp3');
+            audio.play();
+            console.log('4');
+
+            break;
+
+        case 5:
+            var audio = new Audio('music/combo5.mp3');
+            audio.play();
+            console.log('5');
+
+            break;
+
+        default:
+            var audio = new Audio('music/combo5.mp3');
+            audio.play();
+            console.log('above 5');
+
+            break;
+    }
+
+}
+
 async function castCombo(value)
 {
+    
+    playComboSound(value);
     //Cast instant Vanishes after 2 Seconds
     //We just change the text if after two seconds nothing comes in we vanish
     if(value >= 0 && value < 5)

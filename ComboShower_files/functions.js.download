@@ -1,0 +1,238 @@
+var broadcastId;
+var userId;
+var self = this;
+this.peerId = uuidv4();
+this.signalingWS = null;
+var error = false;
+var lastmoment = "";
+
+var newFans = [];
+var newInvites = [];
+
+var goodies;
+var panelList;
+var paneltimecounter = [];
+
+var eventsToTrigger = [];
+
+
+var lastName = "";
+var lastValue = "";
+var comboCounter = 2;
+
+var userName = localStorage.getItem("name");
+
+function saveData()
+{
+    var input = document.getElementById("input");
+    localStorage.setItem("name", input.value);
+    input.value = localStorage.getItem("name");
+
+    var input2 = document.getElementById("fontcolor");
+    localStorage.setItem("color", input2.value);
+    input2.value = localStorage.getItem("color");
+
+    document.getElementById("Container").style.color = localStorage.getItem("color");
+}
+
+async function RunCode()
+{
+    document.getElementById("input").value = localStorage.getItem("name");
+    document.getElementById("fontcolor").value = localStorage.getItem("color");
+    document.getElementById("Container").style.color = localStorage.getItem("color");
+    
+    await DownloadGifts();
+    FetchBroadcastId();
+
+    
+}
+
+//We first try without
+async function CheckforCombos()
+{
+    while(true)
+    {
+        //Check List. If list is not empty or combo is not currently running start Combo.
+        await sleep(2000);
+    }
+}
+
+
+
+
+async function DownloadGifts()
+{
+    console.log("Fetching Gifts...");
+    var proxyUrl = 'https://cors-anywhere.herokuapp.com/',
+    targetUrl = 'https://ynassets.younow.com/giftsData/live/de/data.json';
+    var json = fetch(proxyUrl + targetUrl)
+    .then(blob => blob.json())
+    .then(data => {
+    json = JSON.stringify(data, null, 2);
+     goodies = JSON.parse(json);
+    });
+}
+
+
+async function Retry()
+{
+    console.log("Retrying in 5 seconds");
+    await sleep(5000);
+    error = false;  
+    FetchBroadcastId();
+}
+
+async function FetchBroadcastId()
+{
+    console.log("Fetching Broadcast....");
+    var proxyUrl = 'https://cors-anywhere.herokuapp.com/',
+    targetUrl = 'https://api.younow.com/php/api/broadcast/info/curId=0/user=' + userName;
+    var json = fetch(proxyUrl + targetUrl)
+    .then(blob => blob.json())
+    .then(data => {
+    json = JSON.stringify(data, null, 2);
+    var done = JSON.parse(json);
+        if(json.length < 1)
+        {
+            console.log("No Data Found");
+            error = true;
+        }
+        else if(done.errorCode != 0)
+        {
+            console.log("User not online or not found");
+            error = true;
+        }
+        if(error)
+        {
+            console.log("Error Found Retrying")
+            Retry();
+            return;
+        }
+        else
+        {
+            userId = done.userId;
+            broadcastId = done.broadcastId;
+            console.log("Data Found");
+            FetchEvent();
+            return;
+        }
+  })
+  .catch(e => {  
+  });
+}
+
+function FetchEvent()
+{
+    //First Startup Connection:
+    console.log("Succesfully Connected to WebSocket");	
+
+    
+	var pusher = new Pusher('d5b7447226fc2cd78dbb', {
+        cluster: "younow"
+    });
+    var channel = pusher.subscribe("public-channel_" + userId);
+
+
+
+    //Get Moments, Invites and Shares
+    channel.bind('onChat', async function(data) {
+        	
+            var input =  data.message.comments[0].comment;
+			var foundName = data.message.comments[0].name;  	
+    });
+    //Get Gifts
+    channel.bind('onGift', function(data) {
+            
+        var foundName = data.message.stageGifts[0].name;
+        console.log(foundName);
+        if(data.message != "undefined")
+        {
+            console.log("Gift number:" + data.message.stageGifts[0].giftId);  
+                
+            var foundGift;
+            var foundValue;
+        
+            for(b = 0; b < goodies.goodies.length; b++)
+            {
+                if(data.message.stageGifts[0].giftId == goodies.goodies[b].id)
+                {
+                    foundGift = goodies.goodies[b].SKU;
+                    foundValue = goodies.goodies[b].cost;
+                }
+            }
+                
+            console.log(foundGift + " = found gift with cost: " + foundValue + " with name " + foundName);
+
+        
+            //Set First Value
+            var test = lastName.localeCompare("");         
+            if(test == 0)
+            {
+               lastValue = foundValue;
+               lastName = foundName;
+               console.log("Found First Gift");
+            }
+            else
+            {
+
+                if(lastName == foundName && lastValue == foundValue)
+                {
+                    castCombo(comboCounter);
+                    comboCounter++;
+                    console.log("Found Combo");
+                }
+                else
+                {
+                    lastName = foundName;
+                    lastValue = foundValue;
+                    comboCounter = 2;
+                    console.log("Found Combo Break");
+                }    
+            } 
+        }
+    });
+}
+
+
+async function castCombo(value)
+{
+    //Cast instant Vanishes after 2 Seconds
+    //We just change the text if after two seconds nothing comes in we vanish
+    document.getElementById("Container").innerHTML = "x" + value;
+    await sleep(4000);
+
+    //Here we need to check if the Combo reset or not. Hardest part.
+    if(document.getElementById("Container").innerHTML == value)
+     document.getElementById("Container").innerHTML = "";
+}
+
+
+function uuidv5() {
+    return 'xxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+
+function sleep(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)); }
+
+
+
+function makeid(length) {
+   var result           = '';
+   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   var charactersLength = characters.length;
+   for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
+}

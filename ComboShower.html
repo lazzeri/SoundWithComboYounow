@@ -1,0 +1,51 @@
+
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">	
+		<script src="./ComboShower_files/pusher.min.js.download"></script>
+		<script src="./ComboShower_files/functions.js.download"></script>
+		<script src="./ComboShower_files/jquery.min.js.download"></script>
+		<script src="./ComboShower_files/fetch-jsonp.min.js.download"></script>
+		<script src="./ComboShower_files/jquery.min.js(1).download"></script>
+		<script src="js/functions.js"></script>
+
+	<style>
+	@font-face {
+    font-family: 'rockidzregular';
+    src: url('font/rockidz-webfont.woff2') format('woff2'),
+         url('font/rockidz-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    
+
+	}	
+	.body
+	{
+		overflow-x: hidden;
+	}
+		#Container
+		{
+			color:white;
+			font-family: "rockidzregular";
+			font-size: 100;
+			width: 250px;
+			height: 250px;
+			text-align: center;
+			vertical-align: middle;
+			line-height: 250px;       /* The same as your div height */
+		}
+
+
+	</style>
+	</head>
+	<body onload="RunCode();">
+		<div id="Container"> 
+			
+		</div>
+		<div id='startText'>
+		<h1>FOR THE LOVE OF GOD PRESS THIS BUTTON</h1>
+		</div>
+	<button onclick="castCombo(Math.floor(Math.random() * 100)); removeElement('startText');">START BUTTON</button>
+		
+
+	
+
+</body></html>
